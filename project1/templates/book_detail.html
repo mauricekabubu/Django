@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Midnight Cartographer · BookShelf</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Inter+Tight:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #F7F7FB;
+    --surface: #FFFFFF;
+    --surface-alt: #FAFAFD;
+    --border: #E7E7EF;
+    --border-strong: #DADAE6;
+    --text: #17171F;
+    --text-muted: #6B6B7A;
+    --text-faint: #9A9AA8;
+    --indigo: #6355F4;
+    --indigo-dark: #4F3FE0;
+    --indigo-soft: #EFEDFF;
+    --purple: #9457F5;
+    --accent-grad: linear-gradient(135deg, #6355F4 0%, #9457F5 100%);
+    --success: #16A34A;
+    --success-soft: #E9F9EE;
+    --amber: #D97706;
+    --amber-soft: #FEF3E1;
+    --radius-sm: 10px;
+    --radius: 14px;
+    --radius-lg: 18px;
+    --shadow-sm: 0 1px 2px rgba(23,23,31,0.04);
+    --shadow: 0 4px 16px rgba(23,23,31,0.06);
+    --shadow-lg: 0 12px 32px rgba(23,23,31,0.10);
+    --container: 1240px;
+  }
+
+  html.dark {
+    --bg: #0E0E14;
+    --surface: #17171F;
+    --surface-alt: #1C1C26;
+    --border: #2A2A36;
+    --border-strong: #34343F;
+    --text: #F2F2F7;
+    --text-muted: #A0A0AE;
+    --text-faint: #6E6E7D;
+    --indigo-soft: #211D42;
+    --success-soft: #113321;
+    --amber-soft: #34260D;
+    --shadow-sm: 0 1px 2px rgba(0,0,0,0.2);
+    --shadow: 0 4px 20px rgba(0,0,0,0.35);
+    --shadow-lg: 0 16px 40px rgba(0,0,0,0.5);
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+    transition: background .25s ease, color .25s ease;
+  }
+  a { color: inherit; text-decoration: none; }
+  button { font-family: inherit; cursor: pointer; }
+  img { max-width: 100%; display: block; }
+
+  .container { max-width: var(--container); margin: 0 auto; padding: 0 32px; }
+
+  :focus-visible { outline: 2px solid var(--indigo); outline-offset: 2px; }
+  @media (prefers-reduced-motion: reduce) {
+    * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+  }
+
+  /* ---------- NAVBAR ---------- */
+  .navbar {
+    position: sticky; top: 0; z-index: 40;
+    background: color-mix(in srgb, var(--surface) 88%, transparent);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border);
+  }
+  .navbar-inner {
+    display: flex; align-items: center; justify-content: space-between;
+    height: 68px; gap: 24px;
+  }
+  .brand { display: flex; align-items: center; gap: 9px; font-weight: 800; font-size: 17px; letter-spacing: -0.01em; }
+  .brand-mark {
+    width: 30px; height: 30px; border-radius: 9px;
+    background: var(--accent-grad);
+    display: flex; align-items: center; justify-content: center;
+    color: white; font-size: 15px; font-weight: 800; flex-shrink: 0;
+    box-shadow: 0 3px 10px rgba(99,85,244,0.35);
+  }
+  .nav-links { display: flex; align-items: center; gap: 4px; }
+  .nav-link {
+    padding: 8px 14px; border-radius: 999px; font-size: 14px; font-weight: 500;
+    color: var(--text-muted); transition: background .15s, color .15s;
+  }
+  .nav-link:hover { background: var(--surface-alt); color: var(--text); }
+  .nav-link.active { background: var(--indigo-soft); color: var(--indigo); font-weight: 600; }
+
+  .nav-right { display: flex; align-items: center; gap: 10px; }
+  .icon-btn {
+    width: 38px; height: 38px; border-radius: 10px; border: 1px solid var(--border);
+    background: var(--surface); display: flex; align-items: center; justify-content: center;
+    color: var(--text-muted); position: relative; transition: border-color .15s, color .15s;
+  }
+  .icon-btn:hover { border-color: var(--border-strong); color: var(--text); }
+  .dot-badge {
+    position: absolute; top: -3px; right: -3px; width: 8px; height: 8px; border-radius: 50%;
+    background: #EF4444; border: 2px solid var(--surface);
+  }
+  .avatar {
+    width: 34px; height: 34px; border-radius: 50%;
+    background: var(--accent-grad); color: white; font-weight: 700; font-size: 13px;
+    display: flex; align-items: center; justify-content: center; border: none;
+  }
+  .hamburger { display: none; }
+  .search-box {
+    display: flex; align-items: center; gap: 8px;
+    border: 1px solid var(--border); border-radius: 10px; padding: 8px 12px;
+    color: var(--text-faint); font-size: 13px; width: 220px; background: var(--surface-alt);
+  }
+
+  /* ---------- BREADCRUMB ---------- */
+  .breadcrumb {
+    padding: 18px 0 4px; font-size: 13px; color: var(--text-faint);
+    display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+  }
+  .breadcrumb a { color: var(--text-faint); transition: color .15s; }
+  .breadcrumb a:hover { color: var(--indigo); }
+  .breadcrumb .current { color: var(--text-muted); font-weight: 500; }
+
+  /* ---------- HERO ---------- */
+  .hero { padding: 28px 0 8px; }
+  .hero-grid { display: grid; grid-template-columns: 300px 1fr; gap: 44px; }
+  .cover-wrap { position: relative; }
+  .cover-frame {
+    border-radius: var(--radius-lg); overflow: hidden; border: 1px solid var(--border);
+    box-shadow: var(--shadow-lg); aspect-ratio: 2/3; position: relative;
+    transition: transform .35s cubic-bezier(.2,.8,.2,1);
+  }
+  .cover-frame:hover { transform: translateY(-4px) rotate(-0.6deg); }
+  .cover-frame img { width: 100%; height: 100%; object-fit: cover; }
+  .cover-badge {
+    position: absolute; top: 14px; left: 14px;
+    background: var(--accent-grad); color: white; font-size: 11.5px; font-weight: 700;
+    padding: 5px 11px; border-radius: 999px; letter-spacing: 0.02em;
+    box-shadow: 0 4px 12px rgba(99,85,244,0.4);
+  }
+
+  .genre-badges { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+  .dash-tag {
+    font-size: 12px; font-weight: 600; padding: 5px 12px; border-radius: 999px;
+    background: var(--indigo-soft); color: var(--indigo); border: 1px solid transparent;
+  }
+  .dash-tag.outline { background: transparent; border-color: var(--border-strong); color: var(--text-muted); }
+
+  .book-title {
+    font-family: 'Inter Tight', 'Inter', sans-serif;
+    font-size: 44px; line-height: 1.08; font-weight: 800; letter-spacing: -0.02em;
+    margin: 0 0 10px;
+  }
+  .book-author { font-size: 15.5px; color: var(--text-muted); margin-bottom: 14px; }
+  .book-author a { color: var(--indigo); font-weight: 600; }
+  .book-author a:hover { text-decoration: underline; }
+
+  .rating-row { display: flex; align-items: center; gap: 8px; margin-bottom: 18px; font-size: 14px; }
+  .stars { color: var(--amber); letter-spacing: 1px; font-size: 16px; }
+  .rating-num { font-weight: 700; }
+  .rating-count { color: var(--text-faint); }
+
+  .book-desc { font-size: 15px; line-height: 1.65; color: var(--text-muted); max-width: 60ch; margin-bottom: 22px; }
+
+  .meta-grid {
+    display: grid; grid-template-columns: repeat(3, auto); gap: 14px 36px;
+    font-size: 13.5px; margin-bottom: 26px;
+  }
+  .meta-item { display: flex; flex-direction: column; gap: 2px; }
+  .meta-item .k { color: var(--text-faint); font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.04em; }
+  .meta-item .v { font-weight: 600; }
+
+  /* ---------- ACTIONS ---------- */
+  .action-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px; justify-content: center;
+    border-radius: 10px; font-size: 14.5px; font-weight: 600; padding: 12px 22px;
+    border: 1px solid transparent; transition: transform .12s ease, box-shadow .15s, background .15s, border-color .15s;
+  }
+  .btn:active { transform: scale(0.97); }
+  .btn-primary { background: var(--accent-grad); color: white; box-shadow: 0 6px 18px rgba(99,85,244,0.35); }
+  .btn-primary:hover { box-shadow: 0 8px 22px rgba(99,85,244,0.45); }
+  .btn-secondary { background: var(--surface); color: var(--text); border-color: var(--border-strong); padding: 12px 18px; }
+  .btn-secondary:hover { background: var(--surface-alt); }
+  .btn-icon-only { padding: 12px 14px; }
+  .btn-block { width: 100%; }
+
+  /* ---------- LAYOUT ---------- */
+  .content-grid { display: grid; grid-template-columns: 1fr 320px; gap: 28px; align-items: start; margin-top: 44px; }
+  .main-col { display: flex; flex-direction: column; gap: 22px; }
+  .side-col { display: flex; flex-direction: column; gap: 18px; position: sticky; top: 88px; }
+
+  .dash-panel {
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 26px; box-shadow: var(--shadow-sm);
+  }
+  .panel-title {
+    font-size: 16.5px; font-weight: 700; margin: 0 0 16px; letter-spacing: -0.01em;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .panel-title .see-all { font-size: 12.5px; font-weight: 600; color: var(--indigo); }
+
+  .about-text { font-size: 14.5px; line-height: 1.75; color: var(--text-muted); }
+  .read-more { color: var(--indigo); font-weight: 600; font-size: 13.5px; margin-top: 10px; display: inline-block; }
+
+  /* info grid */
+  .info-grid { display: grid; grid-template-columns: 1fr 1fr; }
+  .info-row {
+    display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border);
+    font-size: 13.5px;
+  }
+  .info-grid .info-row:nth-last-child(-n+2) { border-bottom: none; }
+  .info-row .k { color: var(--text-faint); }
+  .info-row .v { font-weight: 600; }
+
+  /* author panel */
+  .author-panel { display: flex; gap: 16px; }
+  .author-photo { width: 72px; height: 72px; border-radius: 50%; object-fit: cover; border: 1px solid var(--border); flex-shrink: 0; }
+  .author-name { font-weight: 700; font-size: 15.5px; margin-bottom: 2px; }
+  .author-stats { display: flex; gap: 14px; font-size: 12.5px; color: var(--text-faint); margin: 8px 0 12px; }
+  .author-bio { font-size: 13.5px; color: var(--text-muted); line-height: 1.6; margin-bottom: 12px; }
+
+  /* TOC */
+  .toc-list { display: flex; flex-direction: column; gap: 2px; }
+  .toc-row {
+    display: flex; align-items: center; gap: 14px; padding: 13px 12px; border-radius: 10px;
+    transition: background .15s; cursor: pointer;
+  }
+  .toc-row:hover { background: var(--surface-alt); }
+  .toc-row.current { background: var(--indigo-soft); }
+  .toc-num { font-size: 12.5px; font-weight: 700; color: var(--text-faint); width: 22px; flex-shrink: 0; }
+  .toc-row.current .toc-num { color: var(--indigo); }
+  .toc-title { flex: 1; font-size: 14px; font-weight: 500; }
+  .toc-page { font-size: 12.5px; color: var(--text-faint); }
+  .toc-status { width: 18px; display: flex; justify-content: center; color: var(--text-faint); }
+  .toc-status.done { color: var(--success); }
+  .toc-arrow { color: var(--text-faint); font-size: 13px; }
+
+  /* stats */
+  .stats-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 14px; margin-bottom: 20px; }
+  .stat-box { text-align: center; }
+  .stat-val { font-size: 20px; font-weight: 800; letter-spacing: -0.01em; }
+  .stat-label { font-size: 11.5px; color: var(--text-faint); margin-top: 3px; }
+  .progress-track { width: 100%; height: 9px; border-radius: 999px; background: var(--surface-alt); border: 1px solid var(--border); overflow: hidden; }
+  .progress-bar { height: 100%; border-radius: 999px; background: var(--accent-grad); }
+  .progress-caption { display: flex; justify-content: space-between; font-size: 12.5px; color: var(--text-faint); margin-top: 8px; }
+
+  /* sidebar cards */
+  .sidebar-card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 20px; box-shadow: var(--shadow-sm);
+  }
+  .sidebar-title { font-size: 13.5px; font-weight: 700; margin: 0 0 14px; }
+
+  .ring-wrap { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+  .ring-pct { font-size: 22px; font-weight: 800; }
+  .ring-sub { font-size: 12px; color: var(--text-faint); }
+
+  .bm-row { display: flex; gap: 10px; padding: 9px 0; border-bottom: 1px solid var(--border); font-size: 12.5px; }
+  .bm-row:last-child { border-bottom: none; }
+  .bm-page { font-weight: 700; color: var(--indigo); flex-shrink: 0; }
+  .bm-text { color: var(--text-muted); }
+
+  .note-item { font-size: 12.5px; color: var(--text-muted); padding: 9px 0; border-bottom: 1px solid var(--border); line-height: 1.5; }
+  .note-item:last-child { border-bottom: none; }
+  .note-item .note-page { font-weight: 700; color: var(--text); display: block; margin-bottom: 2px; }
+
+  .recent-row { display: flex; align-items: center; gap: 10px; padding: 7px 0; }
+  .recent-cover { width: 32px; height: 46px; border-radius: 4px; object-fit: cover; flex-shrink: 0; border: 1px solid var(--border); }
+  .recent-title { font-size: 12.5px; font-weight: 600; line-height: 1.3; }
+  .recent-author { font-size: 11px; color: var(--text-faint); }
+
+  /* ---------- RELATED ---------- */
+  .section { padding: 52px 0 70px; }
+  .section-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 22px; }
+  .section-head h2 { font-size: 22px; font-weight: 800; letter-spacing: -0.01em; margin: 0; }
+  .related-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 18px; }
+
+  .book-card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    overflow: hidden; box-shadow: var(--shadow-sm); transition: transform .2s ease, box-shadow .2s ease;
+    display: flex; flex-direction: column;
+  }
+  .book-card:hover { transform: translateY(-3px); box-shadow: var(--shadow); }
+  .bc-cover { position: relative; aspect-ratio: 2/3; overflow: hidden; }
+  .bc-cover img { width: 100%; height: 100%; object-fit: cover; }
+  .bc-badge {
+    position: absolute; top: 10px; left: 10px; background: rgba(23,23,31,0.72); backdrop-filter: blur(4px);
+    color: #fff; font-size: 10.5px; font-weight: 600; padding: 4px 9px; border-radius: 999px;
+  }
+  .bc-body { padding: 14px; display: flex; flex-direction: column; gap: 4px; flex: 1; }
+  .bc-title { font-size: 13.5px; font-weight: 700; line-height: 1.3; }
+  .bc-author { font-size: 12px; color: var(--text-faint); margin-bottom: 6px; }
+  .bc-foot { display: flex; align-items: center; justify-content: space-between; font-size: 11.5px; color: var(--text-faint); margin-top: auto; }
+  .bc-rating { color: var(--amber); font-weight: 700; }
+  .bc-btn {
+    margin-top: 10px; text-align: center; font-size: 12.5px; font-weight: 600; padding: 8px;
+    border-radius: 8px; border: 1px solid var(--border-strong); color: var(--text); transition: background .15s;
+  }
+  .bc-btn:hover { background: var(--surface-alt); }
+
+  footer { border-top: 1px solid var(--border); padding: 28px 0; text-align: center; font-size: 12.5px; color: var(--text-faint); }
+
+  /* ---------- RESPONSIVE ---------- */
+  @media (max-width: 1080px) {
+    .related-grid { grid-template-columns: repeat(3, 1fr); }
+  }
+  @media (max-width: 960px) {
+    .content-grid { grid-template-columns: 1fr; }
+    .side-col { position: static; }
+    .hero-grid { grid-template-columns: 220px 1fr; gap: 28px; }
+    .book-title { font-size: 34px; }
+  }
+  @media (max-width: 720px) {
+    .container { padding: 0 18px; }
+    .nav-links, .search-box { display: none; }
+    .hamburger { display: flex; }
+    .hero-grid { grid-template-columns: 1fr; }
+    .cover-frame { max-width: 220px; margin: 0 auto; }
+    .cover-wrap { text-align: center; }
+    .book-title { text-align: center; font-size: 30px; }
+    .book-author, .rating-row, .book-desc { text-align: center; justify-content: center; }
+    .rating-row { justify-content: center; }
+    .meta-grid { grid-template-columns: repeat(2, auto); justify-content: center; text-align: center; }
+    .action-row { justify-content: center; }
+    .info-grid { grid-template-columns: 1fr; }
+    .related-grid { grid-template-columns: repeat(2, 1fr); }
+    .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 18px; }
+  }
+</style>
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="container navbar-inner">
+    <a href="#" class="brand"><span class="brand-mark">B</span>BookShelf</a>
+    <div class="nav-links">
+      <a href="#" class="nav-link">Home</a>
+      <a href="#" class="nav-link">My Library</a>
+      <a href="#" class="nav-link active">Discover</a>
+      <a href="#" class="nav-link">Categories</a>
+    </div>
+    <div class="nav-right">
+      <div class="search-box">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        Search books
+      </div>
+      <button class="icon-btn" aria-label="Notifications">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        <span class="dot-badge"></span>
+      </button>
+      <button class="icon-btn" id="themeToggle" aria-label="Toggle dark mode">
+        <svg id="themeIcon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+      </button>
+      <button class="avatar" aria-label="Account menu">JR</button>
+      <button class="icon-btn hamburger" aria-label="Menu">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+  </div>
+</nav>
+
+<div class="container">
+
+  <div class="breadcrumb">
+    <a href="#">Home</a><span>/</span>
+    <a href="#">Discover</a><span>/</span>
+    <a href="#">Books</a><span>/</span>
+    <span class="current">The Midnight Cartographer</span>
+  </div>
+
+  <section class="hero">
+    <div class="hero-grid">
+      <div class="cover-wrap">
+        <div class="cover-frame">
+          <span class="cover-badge">Featured</span>
+          <img src="https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=600&q=80" alt="Cover of The Midnight Cartographer">
+        </div>
+      </div>
+
+      <div class="hero-info">
+        <div class="genre-badges">
+          <span class="dash-tag">Fiction</span>
+          <span class="dash-tag">Adventure</span>
+          <span class="dash-tag">Fantasy</span>
+        </div>
+        <h1 class="book-title">The Midnight Cartographer</h1>
+        <div class="book-author">by <a href="#">Elena Voss</a></div>
+        <div class="rating-row">
+          <span class="stars">★★★★☆</span>
+          <span class="rating-num">4.8</span>
+          <span class="rating-count">(1,245 reviews)</span>
+        </div>
+        <p class="book-desc">A cartographer who maps places that don't exist yet is pulled into the world hiding beneath her own drawings — and has to redraw the boundary between what's real and what she's imagined before it closes behind her for good.</p>
+
+        <div class="meta-grid">
+          <div class="meta-item"><span class="k">Published</span><span class="v">2024</span></div>
+          <div class="meta-item"><span class="k">Pages</span><span class="v">384</span></div>
+          <div class="meta-item"><span class="k">Language</span><span class="v">English</span></div>
+          <div class="meta-item"><span class="k">ISBN</span><span class="v">978-1-2345-6789-0</span></div>
+          <div class="meta-item"><span class="k">Format</span><span class="v">EPUB / PDF</span></div>
+          <div class="meta-item"><span class="k">Category</span><span class="v">Fantasy</span></div>
+        </div>
+
+        <div class="action-row">
+          <button class="btn btn-primary">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            Start Reading
+          </button>
+          <button class="btn btn-secondary">Add to Library</button>
+          <button class="btn btn-secondary btn-icon-only" aria-label="Bookmark">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+          </button>
+          <button class="btn btn-secondary btn-icon-only" aria-label="Share">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="content-grid">
+    <div class="main-col">
+
+      <div class="dash-panel">
+        <h3 class="panel-title">About This Book</h3>
+        <p class="about-text" id="aboutText">Wren Halloway draws maps for a living — city planners, film sets, the occasional fantasy novelist. She's careful never to draw anything that isn't already there. Then a client hands her a torn, hand-inked chart of a coastline that matches nowhere on Earth, and asks her to finish it.<span id="aboutMore"> The moment she does, the ink bleeds off the page and into the world around her: streets fold, doors open onto rooms that shouldn't exist, and the coastline she completed starts showing up at the edge of her own city. To close the gap she opened, Wren has to travel into the map itself, tracing its unfinished edges before whatever lives on the other side finishes them for her. Part travelogue, part unraveling mystery, The Midnight Cartographer is a novel about the places we draw to make sense of the ones we can't.</span></p>
+        <a href="#" class="read-more" id="readMoreBtn">Read more</a>
+      </div>
+
+      <div class="dash-panel">
+        <h3 class="panel-title">Book Information</h3>
+        <div class="info-grid">
+          <div class="info-row"><span class="k">Author</span><span class="v">Elena Voss</span></div>
+          <div class="info-row"><span class="k">Publisher</span><span class="v">Northlight Press</span></div>
+          <div class="info-row"><span class="k">Published</span><span class="v">March 2024</span></div>
+          <div class="info-row"><span class="k">Pages</span><span class="v">384</span></div>
+          <div class="info-row"><span class="k">Language</span><span class="v">English</span></div>
+          <div class="info-row"><span class="k">ISBN</span><span class="v">978-1-2345-6789-0</span></div>
+          <div class="info-row"><span class="k">Format</span><span class="v">EPUB / PDF</span></div>
+          <div class="info-row"><span class="k">Category</span><span class="v">Fantasy</span></div>
+        </div>
+      </div>
+
+      <div class="dash-panel">
+        <h3 class="panel-title">About the Author</h3>
+        <div class="author-panel">
+          <img class="author-photo" src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&q=80" alt="Portrait of Elena Voss">
+          <div>
+            <div class="author-name">Elena Voss</div>
+            <div class="author-stats">
+              <span>12 books published</span>
+              <span>★ 4.7 avg rating</span>
+            </div>
+            <p class="author-bio">Elena Voss spent a decade as a working cartographer before turning to fiction. Her novels are known for treating maps, borders, and unfinished spaces as characters in their own right.</p>
+            <button class="btn btn-secondary" style="padding:9px 16px; font-size:13px;">View Author Profile</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="dash-panel">
+        <h3 class="panel-title">Table of Contents</h3>
+        <div class="toc-list">
+          <div class="toc-row">
+            <span class="toc-num">01</span><span class="toc-title">Introduction</span>
+            <span class="toc-page">Page 1</span>
+            <span class="toc-status done"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></span>
+          </div>
+          <div class="toc-row">
+            <span class="toc-num">02</span><span class="toc-title">The Beginning</span>
+            <span class="toc-page">Page 12</span>
+            <span class="toc-status done"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></span>
+          </div>
+          <div class="toc-row current">
+            <span class="toc-num">03</span><span class="toc-title">The Journey</span>
+            <span class="toc-page">Page 28</span>
+            <span class="toc-arrow">→</span>
+          </div>
+          <div class="toc-row">
+            <span class="toc-num">04</span><span class="toc-title">The Coastline That Wasn't</span>
+            <span class="toc-page">Page 61</span>
+            <span class="toc-arrow">→</span>
+          </div>
+          <div class="toc-row">
+            <span class="toc-num">05</span><span class="toc-title">Doors That Weren't There Before</span>
+            <span class="toc-page">Page 104</span>
+            <span class="toc-status"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></span>
+          </div>
+          <div class="toc-row">
+            <span class="toc-num">06</span><span class="toc-title">The Other Edge of the Map</span>
+            <span class="toc-page">Page 152</span>
+            <span class="toc-status"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="dash-panel">
+        <h3 class="panel-title">Reading Statistics</h3>
+        <div class="stats-grid">
+          <div class="stat-box"><div class="stat-val">384</div><div class="stat-label">Pages</div></div>
+          <div class="stat-box"><div class="stat-val">6h 15m</div><div class="stat-label">Est. reading time</div></div>
+          <div class="stat-box"><div class="stat-val">261</div><div class="stat-label">Pages read</div></div>
+          <div class="stat-box"><div class="stat-val">68%</div><div class="stat-label">Completion</div></div>
+        </div>
+        <div class="progress-track"><div class="progress-bar" style="width:68%"></div></div>
+        <div class="progress-caption"><span>68% completed</span><span>261 / 384 pages</span></div>
+      </div>
+
+    </div>
+
+    <aside class="side-col">
+      <div class="sidebar-card">
+        <h4 class="sidebar-title">Reading Progress</h4>
+        <div class="ring-wrap">
+          <svg width="104" height="104" viewBox="0 0 104 104">
+            <circle cx="52" cy="52" r="45" fill="none" stroke="var(--border)" stroke-width="9"/>
+            <circle cx="52" cy="52" r="45" fill="none" stroke="url(#ringGrad)" stroke-width="9"
+              stroke-linecap="round" stroke-dasharray="282.7" stroke-dashoffset="90.5" transform="rotate(-90 52 52)"/>
+            <defs>
+              <linearGradient id="ringGrad" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="#6355F4"/>
+                <stop offset="100%" stop-color="#9457F5"/>
+              </linearGradient>
+            </defs>
+            <text x="52" y="58" text-anchor="middle" font-size="20" font-weight="800" fill="var(--text)">68%</text>
+          </svg>
+          <div class="ring-sub">261 / 384 pages</div>
+          <button class="btn btn-primary btn-block" style="padding:11px;">Continue Reading</button>
+        </div>
+      </div>
+
+      <div class="sidebar-card">
+        <h4 class="sidebar-title">Bookmarks</h4>
+        <div class="bm-row"><span class="bm-page">p.45</span><span class="bm-text">Important concept</span></div>
+        <div class="bm-row"><span class="bm-page">p.102</span><span class="bm-text">Character introduction</span></div>
+      </div>
+
+      <div class="sidebar-card">
+        <h4 class="sidebar-title">Notes</h4>
+        <div class="note-item"><span class="note-page">Page 61</span>The coastline detail mirrors the prologue map — reread that.</div>
+        <div class="note-item"><span class="note-page">Page 88</span>Good line about borders being promises, not facts.</div>
+      </div>
+
+      <div class="sidebar-card">
+        <h4 class="sidebar-title">Recently Viewed</h4>
+        <div class="recent-row">
+          <img class="recent-cover" src="https://images.unsplash.com/photo-1512820790803-83ca734da794?w=100&q=80" alt="">
+          <div><div class="recent-title">The Glass Archivist</div><div class="recent-author">Mireille Auclair</div></div>
+        </div>
+        <div class="recent-row">
+          <img class="recent-cover" src="https://images.unsplash.com/photo-1541963463532-d68292c34b19?w=100&q=80" alt="">
+          <div><div class="recent-title">Harborlight</div><div class="recent-author">Tomas Reyes</div></div>
+        </div>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<section class="section">
+  <div class="container">
+    <div class="section-head">
+      <h2>You May Also Like</h2>
+    </div>
+    <div class="related-grid" id="relatedGrid"></div>
+  </div>
+</section>
+
+<footer>© 2026 BookShelf. All rights reserved.</footer>
+
+<script>
+  // Theme toggle
+  const themeToggle = document.getElementById('themeToggle');
+  const themeIcon = document.getElementById('themeIcon');
+  function setMoonIcon(isDark) {
+    themeIcon.innerHTML = isDark
+      ? '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>'
+      : '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>';
+  }
+  themeToggle.addEventListener('click', () => {
+    const isDark = document.documentElement.classList.toggle('dark');
+    setMoonIcon(isDark);
+  });
+
+  // Read more
+  document.getElementById('readMoreBtn').addEventListener('click', (e) => {
+    e.preventDefault();
+    const more = document.getElementById('aboutMore');
+    const btn = e.target;
+    const collapsed = more.style.display === 'none';
+    more.style.display = collapsed ? 'inline' : 'none';
+    btn.textContent = collapsed ? 'Read less' : 'Read more';
+  });
+  document.getElementById('aboutMore').style.display = 'none';
+
+  // Related books
+  const related = [
+    { title: 'The Glass Archivist', author: 'Mireille Auclair', genre: 'Mystery', rating: 4.6, year: 2023, img: 'https://images.unsplash.com/photo-1512820790803-83ca734da794?w=400&q=80' },
+    { title: 'Harborlight', author: 'Tomas Reyes', genre: 'Adventure', rating: 4.4, year: 2022, img: 'https://images.unsplash.com/photo-1541963463532-d68292c34b19?w=400&q=80' },
+    { title: 'Salt & Static', author: 'Priya Nandan', genre: 'Sci-Fi', rating: 4.9, year: 2024, img: 'https://images.unsplash.com/photo-1495446815901-a7297e633e8d?w=400&q=80' },
+    { title: 'The Quiet Hour', author: 'Dev Okafor', genre: 'Fantasy', rating: 4.5, year: 2021, img: 'https://images.unsplash.com/photo-1476275466078-4007374efbbe?w=400&q=80' },
+    { title: 'Paper Tide', author: 'Solveig Nystrom', genre: 'Fiction', rating: 4.7, year: 2023, img: 'https://images.unsplash.com/photo-1519682337058-a94d519337bc?w=400&q=80' },
+  ];
+  const grid = document.getElementById('relatedGrid');
+  grid.innerHTML = related.map(b => `
+    <div class="book-card">
+      <div class="bc-cover">
+        <span class="bc-badge">${b.genre}</span>
+        <img src="${b.img}" alt="Cover of ${b.title}">
+      </div>
+      <div class="bc-body">
+        <div class="bc-title">${b.title}</div>
+        <div class="bc-author">${b.author}</div>
+        <div class="bc-foot"><span class="bc-rating">★ ${b.rating}</span><span>${b.year}</span></div>
+        <a href="#" class="bc-btn">View Book</a>
+      </div>
+    </div>
+  `).join('');
+</script>
+
+</body>
+</html>

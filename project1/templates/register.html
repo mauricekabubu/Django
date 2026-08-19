@@ -1,0 +1,171 @@
+{% load static %}
+{% load socialaccount %}
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Create Account — BookShelf</title>
+<meta name="description" content="Create your free BookShelf account and start building your reading list." />
+
+<!-- Google Font: Inter -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+
+<link rel="stylesheet" href="{% static 'style.css' %}"/>
+<link rel="stylesheet" href="{% static 'auth.css' %}"/>
+</head>
+<body class="auth-body">
+
+<a class="skip-link" href="#authMain">Skip to content</a>
+
+<!-- ============================= -->
+<!-- AUTH TOP BAR                   -->
+<!-- ============================= -->
+<header class="auth-topbar">
+  <div class="container auth-topbar__inner">
+    <a href="{% url 'index' %}" class="brand" aria-label="BookShelf home">
+      <span class="brand__mark" aria-hidden="true">
+        <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
+          <rect x="2" y="3" width="4" height="20" rx="1.5" fill="currentColor"/>
+          <rect x="8" y="1" width="4" height="22" rx="1.5" fill="currentColor" opacity="0.75"/>
+          <rect x="14" y="4" width="4" height="19" rx="1.5" fill="currentColor" opacity="0.5"/>
+          <rect x="20" y="2" width="4" height="21" rx="1.5" fill="currentColor" opacity="0.25"/>
+        </svg>
+      </span>
+      <span class="brand__name">BookShelf</span>
+    </a>
+
+    <p class="auth-topbar__link">
+      Already have an account?
+      <a href="{% url 'login' %}">Sign in</a>
+    </p>
+  </div>
+</header>
+
+<!-- ============================= -->
+<!-- AUTH MAIN                      -->
+<!-- ============================= -->
+<main id="authMain" class="auth-main">
+
+  <!-- Decorative backdrop: faint book spines + glow -->
+  <div class="auth-backdrop" aria-hidden="true">
+    <div class="auth-backdrop__glow"></div>
+    <div class="auth-backdrop__spines">
+      <span class="auth-spine"></span>
+      <span class="auth-spine"></span>
+      <span class="auth-spine"></span>
+      <span class="auth-spine"></span>
+      <span class="auth-spine"></span>
+      <span class="auth-spine"></span>
+      <span class="auth-spine"></span>
+      <span class="auth-spine"></span>
+      <span class="auth-spine"></span>
+      <span class="auth-spine"></span>
+    </div>
+  </div>
+
+  <div class="auth-card">
+    <p class="eyebrow auth-card__eyebrow">Get started</p>
+    <h1 class="auth-card__title">Create your account</h1>
+    <p class="auth-card__subtitle">Join BookShelf and start building your reading list.</p>
+
+    <form class="auth-form" method="POST" action="{% url 'register' %}">
+         {% csrf_token %}
+
+      <div class="auth-field">
+        <label for="registerName">username</label>
+        <input
+          type="text"
+          name="username"
+          id="registerName"
+          class="auth-input"
+          placeholder="Enter your full name"
+          value="{{ request.POST.username|default:''}}"
+          autocomplete="name"
+          required
+        />
+      </div>
+
+      <div class="auth-field">
+        <label for="registerEmail">Email address</label>
+        <input
+          type="email"
+          name="email"
+          id="registerEmail"
+          class="auth-input"
+          placeholder="Enter your email"
+          value="{{ request.POST.email|default:''}}"
+          autocomplete="email"
+          required
+        />
+      </div>
+
+      <div class="auth-field">
+        <label for="registerPassword">Password</label>
+        <input
+          type="password"
+          name="password"
+          id="registerPassword"
+          class="auth-input"
+          placeholder="Create a password"
+          value="{{ request.POST.password|default:''}}"
+          autocomplete="new-password"
+          required
+        />
+      </div>
+
+      <div class="auth-field">
+        <label for="registerConfirmPassword">Confirm password</label>
+        <input
+          type="password"
+          name="confirm_password"
+          id="registerConfirmPassword"
+          class="auth-input"
+          placeholder="Re-enter your password"
+          value="{{ request.POST.confirm_password|default:''}}"
+          autocomplete="new-password"
+          required
+        />
+      </div>
+
+      <div class="auth-remember">
+        <label class="auth-checkbox">
+          <input type="checkbox" name="agree_terms" id="registerTerms" required />
+          <span class="auth-checkbox__box" aria-hidden="true"></span>
+          <span class="auth-checkbox__label">I agree to the Terms of Service and Privacy Policy</span>
+        </label>
+      </div>
+
+      <button type="submit" class="btn btn--primary btn--lg auth-submit">Create Account</button>
+
+      <div class="auth-divider" role="separator">
+        <span>OR</span>
+      </div>
+
+        <a href="{% provider_login_url 'google' %}"
+            class="btn btn--surface-outline btn--lg auth-google">
+            <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
+                <path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.9c1.7-1.57 2.7-3.88 2.7-6.62z"/>
+                <path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.9-2.26c-.8.54-1.84.86-3.06.86-2.35 0-4.34-1.59-5.05-3.72H.95v2.33A9 9 0 0 0 9 18z"/>
+                <path fill="#FBBC05" d="M3.95 10.7A5.4 5.4 0 0 1 3.67 9c0-.59.1-1.17.28-1.7V4.97H.95A9 9 0 0 0 0 9c0 1.45.35 2.83.95 4.03z"/>
+                <path fill="#EA4335" d="M9 3.58c1.32 0 2.51.46 3.44 1.35l2.58-2.58C13.46.89 11.43 0 9 0A9 9 0 0 0 .95 4.97L3.95 7.3C4.66 5.17 6.65 3.58 9 3.58z"/>
+            </svg>
+            <span>Continue with Google</span>
+        </a>
+    </form>
+
+    <p class="auth-card__footer">
+      Already have an account?
+      <a href="{% url 'login' %}">Sign in</a>
+    </p>
+  </div>
+
+</main>
+
+<script src="{% static 'main.js' %}"></script>
+</body>
+</html>
