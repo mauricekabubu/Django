@@ -4,10 +4,36 @@ GET http://127.0.0.1:8000/products/ HTTP/1.1
 
 POST http://127.0.0.1:8000/products/ HTTP/1.1
 Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzkzNDc3MDEwLCJpYXQiOjE3OTM0NzY3MTAsImp0aSI6ImViYTUzMTI4ZDZkYzQyMjVhY2QyMzg0ZWViNDk5N2IzIiwidXNlcl9pZCI6IjEifQ.TvoRaNVHfKPHyefV10uy_ewZ6Yi9tHTlasp8j1eIfZk
 
 {
-    "name":"Apple Smart Watch",
-    "price":10500.00,
+    "name":"Samsung Smart Watch",
+    "price":8500.00,
     "description":"dhgjsakqweaaiusukewerf",
-    "stock":5
+    "stock":9
+}
+
+###
+
+POST http://127.0.0.1:8000/api/token/ HTTP/1.1
+Content-Type: application/json
+
+{
+    "username":"admin",
+    "password":"Burunje254@"
+}
+
+
+###
+
+GET http://127.0.0.1:8000/user-orders/ HTTP/1.1
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzkzNDc3MDEwLCJpYXQiOjE3OTM0NzY3MTAsImp0aSI6ImViYTUzMTI4ZDZkYzQyMjVhY2QyMzg0ZWViNDk5N2IzIiwidXNlcl9pZCI6IjEifQ.TvoRaNVHfKPHyefV10uy_ewZ6Yi9tHTlasp8j1eIfZk
+
+###
+
+POST http://127.0.0.1:8000/api/token/refresh/ HTTP/1.1
+Content-Type: application/json
+
+{
+    "refresh":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTc5MzU2MzI4NCwiaWF0IjoxNzkzNDc2ODg0LCJqdGkiOiI1MGY1ZWU2MGY0MDY0NDJmODMyZGE5M2ZmOGNhZGZjNCIsInVzZXJfaWQiOiIxIn0.xVTa0Mup9LTU5ybU_QydYQntvfEsQlRauadecj6Njbc"
 }
