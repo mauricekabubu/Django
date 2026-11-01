@@ -11,15 +11,22 @@ from rest_framework.parsers import JSONParser, FormParser, MultiPartParser
 from .filters import ProductFilter, InStockFilterBackend
 from rest_framework import filters
 from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.pagination import PageNumberPagination, LimitOffsetPagination
 
 # Classsbased Api view
 class ProductListCreateAPIView(generics.ListCreateAPIView):
-    queryset = Product.objects.filter(stock__gt=0)
+    queryset = Product.objects.order_by("pk")
     serializer_class = ProductSerializer
     filterset_class = ProductFilter
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter, InStockFilterBackend]
     search_fields = ["name", "description"]
     ordering_fields = ["name", "price", "stock"]
+    #pagination_class = PageNumberPagination
+    # pagination_class.page_size = 2
+    # pagination_class.page_query_param = "pagenum"
+    # pagination_class.page_size_query_param = "size"
+    # pagination_class.max_page_size = 4
+    pagination_class = LimitOffsetPagination
     
     def get_permissions(self):
         self.permission_classes = [AllowAny]
