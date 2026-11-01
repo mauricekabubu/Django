@@ -7,7 +7,7 @@ from rest_framework.decorators import api_view
 from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated, IsAdminUser, AllowAny
 from rest_framework.views import APIView
-
+from rest_framework.parsers import JSONParser, FormParser, MultiPartParser
 
 
 # Classsbased Api view
@@ -46,10 +46,20 @@ class ProductListCreateAPIView(generics.ListCreateAPIView):
     
 #     return Response(serializer.data)
 
-class ProductDetailAPIView(generics.RetrieveAPIView):
+class ProductDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
+    parser_classes = [JSONParser, FormParser, MultiPartParser]
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
     lookup_url_kwarg = "product_id"
+    
+    def get_permissions(self):        
+        self.permission_classes = [AllowAny]
+        
+        if self.request.method in ["PUT","PATCH","DELETE"]:
+            self.permission_classes = [IsAdminUser]
+        
+        return super().get_permissions()
+    
 
 # @api_view(["GET"])
 # def product_detail(request,pk):
