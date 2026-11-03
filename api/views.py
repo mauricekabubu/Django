@@ -1,14 +1,17 @@
 from django.db.models import Max
+from .models import Order, Product
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
+from .serializers import ProductSerializer, OrderSerializer, ProductInfoSerializer, OrderCreateSerializer
 from rest_framework import filters, generics, viewsets
 from rest_framework.decorators import api_view, action
 from rest_framework.parsers import FormParser, JSONParser, MultiPartParser
 from rest_framework.permissions import AllowAny, IsAdminUser, IsAuthenticated
+from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.parsers import JSONParser, FormParser, MultiPartParser
-from .filters import ProductFilter, InStockFilterBackend
+from .filters import ProductFilter, InStockFilterBackend, OrderFilter
 from rest_framework import filters
 from django_filters.rest_framework import DjangoFilterBackend
 
@@ -43,12 +46,35 @@ class OrderViewSet(viewsets.ModelViewSet):
     filterset_class = OrderFilter
     filter_backends = [DjangoFilterBackend]
     
-    @action(detail=False, methods=['get'], url_path="user-orders", permission_classes=[IsAuthenticated])
-    def user_orders(self, request):
-        orders = self.get_queryset().filter(user=request.user)
-        serializer = self.get_serializer(orders, many=True)
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+        
     
-        return Response(serializer.data)
+    def get_serializer_class(self):
+        # Can also check if POST: if self.request.method == "POST": or if self.request.method in ["POST", "PUT", "PATCH"]: or self.request.method == "PUT"
+        if self.action == "create" or self.action == "update":
+            return OrderCreateSerializer
+        
+        return super().get_serializer_class()
+    
+    def get_queryset(self):        
+        qs = super().get_queryset()
+        user = self.request.user
+
+        if not user.is_authenticated:
+            return qs.none()
+
+        if not user.is_staff:
+            qs = qs.filter(user=user)
+
+        return qs
+        
+    # @action(detail=False, methods=['get'], url_path="user-orders", permission_classes=[IsAuthenticated])
+    # def user_orders(self, request):
+    #     orders = self.get_queryset().filter(user=request.user)
+    #     serializer = self.get_serializer(orders, many=True)
+    
+    #     return Response(serializer.data)
     
     
     
