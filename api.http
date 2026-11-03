@@ -58,3 +58,59 @@ Content-Type: application/json
 {
     "refresh":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTc5MzU2MzI4NCwiaWF0IjoxNzkzNDc2ODg0LCJqdGkiOiI1MGY1ZWU2MGY0MDY0NDJmODMyZGE5M2ZmOGNhZGZjNCIsInVzZXJfaWQiOiIxIn0.xVTa0Mup9LTU5ybU_QydYQntvfEsQlRauadecj6Njbc"
 }
+
+
+###
+GET http://127.0.0.1:8000/orders/ HTTP/1.1
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzkzNzI3MDE1LCJpYXQiOjE3OTM3MjY3MTUsImp0aSI6IjkzOTczZWVmYjhjNjRkZTNiODc3M2U3NjcxNTJjYTQ5IiwidXNlcl9pZCI6IjIifQ.tqw-9QdBrjeTm5zQLXfU-asCQOPIw8pXoBV906u4_lE
+
+###
+GET http://127.0.0.1:8000/orders/218c8ef3-76f7-4c78-b2b0-1515649928d0/ HTTP/1.1
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzkzNzMzMTkxLCJpYXQiOjE3OTM3MzI4OTEsImp0aSI6IjlhOWY3ZmQ3MDNhMTRmNWNhY2FkODk5NzMwZGMyNjIyIiwidXNlcl9pZCI6IjEifQ.4lVuMTIVbG1M8JweiWvd0E_S2fTEX2EqKqSGOPbz1hc
+
+
+###
+POST http://127.0.0.1:8000/orders/ HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzkzNzMxMzk2LCJpYXQiOjE3OTM3MzEwOTYsImp0aSI6IjkzMDRiOWZiNzU2YTQxYTRhMzZmNDY2OTQ1YWU1YTlmIiwidXNlcl9pZCI6IjEifQ.Hwe7mPcLD-RiHFM1q3TDUZbhjtFz3OW0uM6pnmWw18c
+
+{
+    "status": "Pending",
+    "user":1,
+    "items":[
+        {
+            "product": 3,
+            "quantity": 4
+        },
+        {
+            "product": 4,
+            "quantity": 5
+        }
+    ]
+}
+
+
+###
+
+PUT http://127.0.0.1:8000/orders/218c8ef3-76f7-4c78-b2b0-1515649928d0/ HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzkzNzMyODc4LCJpYXQiOjE3OTM3MzI1NzgsImp0aSI6IjQyNDEzY2JhMjM1YzQ3MzY4ZTg4ZTE0YmM4YWU2MDczIiwidXNlcl9pZCI6IjEifQ.U8NScMg117okKsw_OnNsPXTBHQckzk-X2Eq0v5aIKdo
+
+{
+    "status": "Cancelled",
+    "user":1,
+    "items":[
+        {
+            "product": 3,
+            "quantity": 5
+        },
+        {
+            "product": 4,
+            "quantity": 5
+        }
+    ]
+}
+
+###
+DELETE http://127.0.0.1:8000/orders/218c8ef3-76f7-4c78-b2b0-1515649928d0/ HTTP/1.1
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzkzNzMyODc4LCJpYXQiOjE3OTM3MzI1NzgsImp0aSI6IjQyNDEzY2JhMjM1YzQ3MzY4ZTg4ZTE0YmM4YWU2MDczIiwidXNlcl9pZCI6IjEifQ.U8NScMg117okKsw_OnNsPXTBHQckzk-X2Eq0v5aIKdo
