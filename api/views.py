@@ -1,8 +1,8 @@
 from django.db.models import Max
-from .models import Order, Product
+from .models import Order, Product, User
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from .serializers import ProductSerializer, OrderSerializer, ProductInfoSerializer, OrderCreateSerializer
+from .serializers import ProductSerializer, OrderSerializer, ProductInfoSerializer, OrderCreateSerializer, UserSerializer
 from rest_framework import filters, generics, viewsets
 from rest_framework.decorators import api_view, action
 from rest_framework.parsers import FormParser, JSONParser, MultiPartParser
@@ -161,4 +161,10 @@ class ProductInfoAPIView(APIView):
         
         return Response(serializer.data)
 
+
+
+class UserListAPIView(generics.ListAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    pagination_class = None
     
