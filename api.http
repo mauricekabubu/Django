@@ -47,9 +47,8 @@ Content-Type: application/json
 
 ###
 
-GET http://127.0.0.1:8000/user-orders/ HTTP/1.1
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzkzNDc3MDEwLCJpYXQiOjE3OTM0NzY3MTAsImp0aSI6ImViYTUzMTI4ZDZkYzQyMjVhY2QyMzg0ZWViNDk5N2IzIiwidXNlcl9pZCI6IjEifQ.TvoRaNVHfKPHyefV10uy_ewZ6Yi9tHTlasp8j1eIfZk
-
+GET http://127.0.0.1:8000/orders/ HTTP/1.1
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzk0NjU0Mzg4LCJpYXQiOjE3OTQ2NTQwODgsImp0aSI6IjA5NjE4YWMxMGJhMjQ0ZWY5ZGIxNzNhZDVhZDVhYTE5IiwidXNlcl9pZCI6IjEifQ.1OwqIpqTDyN3LBgVFvdL0OTrjH9-dEuUG7pjW-9fSUc
 ###
 
 POST http://127.0.0.1:8000/api/token/refresh/ HTTP/1.1
