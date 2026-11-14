@@ -1,3 +1,6 @@
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
+from django.views.decorators.vary import vary_on_headers
 from django.db.models import Max
 from .models import Order, Product, User
 from django.shortcuts import get_object_or_404
@@ -14,9 +17,12 @@ from rest_framework.parsers import JSONParser, FormParser, MultiPartParser
 from .filters import ProductFilter, InStockFilterBackend, OrderFilter
 from rest_framework import filters
 from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.throttling import ScopedRateThrottle
 
 # Classsbased Api view
 class ProductListCreateAPIView(generics.ListCreateAPIView):
+    throttle_scope = "products" # Throttling/rate limiting api's requests
+    throttle_classes = [ScopedRateThrottle]
     queryset = Product.objects.order_by("pk")
     serializer_class = ProductSerializer
     filterset_class = ProductFilter
@@ -29,6 +35,16 @@ class ProductListCreateAPIView(generics.ListCreateAPIView):
     # pagination_class.page_size_query_param = "size"
     # pagination_class.max_page_size = 4
     pagination_class = LimitOffsetPagination
+    # With cookie: cache requested url for each user for 2 hours
+    @method_decorator(cache_page(60 * 15, key_prefix="product_list"))    
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
+    
+    def get_queryset(self):
+        import time
+        time.sleep(2)
+        
+        return super().get_queryset()
     
     def get_permissions(self):
         self.permission_classes = [AllowAny]
@@ -39,6 +55,8 @@ class ProductListCreateAPIView(generics.ListCreateAPIView):
         return super().get_permissions()
 
 class OrderViewSet(viewsets.ModelViewSet):
+    throttle_scope = "orders"
+    throttle_classes = [ScopedRateThrottle]
     queryset = Order.objects.prefetch_related("items", "items__product")
     serializer_class = OrderSerializer
     permission_classes = [AllowAny]
@@ -56,6 +74,11 @@ class OrderViewSet(viewsets.ModelViewSet):
             return OrderCreateSerializer
         
         return super().get_serializer_class()
+
+    @method_decorator(cache_page(60 * 15, key_prefix="order_list")) 
+    @method_decorator(vary_on_headers("Authorization"))   
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
     
     def get_queryset(self):        
         qs = super().get_queryset()
