@@ -18,6 +18,7 @@ from .filters import ProductFilter, InStockFilterBackend, OrderFilter
 from rest_framework import filters
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.throttling import ScopedRateThrottle
+from api.tasks import send_order_confirmation_email
 
 # Classsbased Api view
 class ProductListCreateAPIView(generics.ListCreateAPIView):
@@ -65,7 +66,8 @@ class OrderViewSet(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend]
     
     def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
+        order = serializer.save(user=self.request.user)
+        send_order_confirmation_email.delay(order.order_id, self.request.user.email)
         
     
     def get_serializer_class(self):
