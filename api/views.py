@@ -1,20 +1,29 @@
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
+from django.views.decorators.vary import vary_on_headers
 from django.db.models import Max
+from .models import Order, Product, User
 from django.shortcuts import get_object_or_404
-from api.serializers import ProductSerializer, OrderSerializer, OrderItemSerializer, ProductInfoSerializer
-from .models import Product, Order, OrderItem
+from django_filters.rest_framework import DjangoFilterBackend
+from .serializers import ProductSerializer, OrderSerializer, ProductInfoSerializer, OrderCreateSerializer, UserSerializer
+from rest_framework import filters, generics, viewsets
+from rest_framework.decorators import api_view, action
+from rest_framework.parsers import FormParser, JSONParser, MultiPartParser
+from rest_framework.permissions import AllowAny, IsAdminUser, IsAuthenticated
+from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.response import Response
-from rest_framework.decorators import api_view
-from rest_framework import generics
-from rest_framework.permissions import IsAuthenticated, IsAdminUser, AllowAny
 from rest_framework.views import APIView
 from rest_framework.parsers import JSONParser, FormParser, MultiPartParser
-from .filters import ProductFilter, InStockFilterBackend
+from .filters import ProductFilter, InStockFilterBackend, OrderFilter
 from rest_framework import filters
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework.pagination import PageNumberPagination, LimitOffsetPagination
+from rest_framework.throttling import ScopedRateThrottle
+from api.tasks import send_order_confirmation_email
 
 # Classsbased Api view
 class ProductListCreateAPIView(generics.ListCreateAPIView):
+    throttle_scope = "products" # Throttling/rate limiting api's requests
+    throttle_classes = [ScopedRateThrottle]
     queryset = Product.objects.order_by("pk")
     serializer_class = ProductSerializer
     filterset_class = ProductFilter
@@ -27,6 +36,16 @@ class ProductListCreateAPIView(generics.ListCreateAPIView):
     # pagination_class.page_size_query_param = "size"
     # pagination_class.max_page_size = 4
     pagination_class = LimitOffsetPagination
+    # With cookie: cache requested url for each user for 2 hours
+    @method_decorator(cache_page(60 * 15, key_prefix="product_list"))    
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
+    
+    def get_queryset(self):
+        import time
+        time.sleep(2)
+        
+        return super().get_queryset()
     
     def get_permissions(self):
         self.permission_classes = [AllowAny]
@@ -36,6 +55,54 @@ class ProductListCreateAPIView(generics.ListCreateAPIView):
         
         return super().get_permissions()
 
+class OrderViewSet(viewsets.ModelViewSet):
+    throttle_scope = "orders"
+    throttle_classes = [ScopedRateThrottle]
+    queryset = Order.objects.prefetch_related("items", "items__product")
+    serializer_class = OrderSerializer
+    permission_classes = [AllowAny]
+    pagination_class = None
+    filterset_class = OrderFilter
+    filter_backends = [DjangoFilterBackend]
+    
+    def perform_create(self, serializer):
+        order = serializer.save(user=self.request.user)
+        send_order_confirmation_email.delay(order.order_id, self.request.user.email)
+        
+    
+    def get_serializer_class(self):
+        # Can also check if POST: if self.request.method == "POST": or if self.request.method in ["POST", "PUT", "PATCH"]: or self.request.method == "PUT"
+        if self.action == "create" or self.action == "update":
+            return OrderCreateSerializer
+        
+        return super().get_serializer_class()
+
+    @method_decorator(cache_page(60 * 15, key_prefix="order_list")) 
+    @method_decorator(vary_on_headers("Authorization"))   
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
+    
+    def get_queryset(self):        
+        qs = super().get_queryset()
+        user = self.request.user
+
+        if not user.is_authenticated:
+            return qs.none()
+
+        if not user.is_staff:
+            qs = qs.filter(user=user)
+
+        return qs
+        
+    # @action(detail=False, methods=['get'], url_path="user-orders", permission_classes=[IsAuthenticated])
+    # def user_orders(self, request):
+    #     orders = self.get_queryset().filter(user=request.user)
+    #     serializer = self.get_serializer(orders, many=True)
+    
+    #     return Response(serializer.data)
+    
+    
+    
 
 # class ProductListAPIView(generics.ListAPIView):
 #     queryset = Product.objects.filter(stock__gt=0)
@@ -81,19 +148,19 @@ class ProductDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
     
 #     return Response(serializer.data)
 
-class OrderListAPIView(generics.ListAPIView):
-    queryset = Order.objects.prefetch_related("items", "items__product")
-    serializer_class = OrderSerializer
+# class OrderListAPIView(generics.ListAPIView):
+#     queryset = Order.objects.prefetch_related("items", "items__product")
+#     serializer_class = OrderSerializer
     
-class UserOrderListAPIView(generics.ListAPIView):
-    queryset = Order.objects.prefetch_related("items", "items__product")
-    serializer_class = OrderSerializer
-    permission_classes = [IsAuthenticated]
+# class UserOrderListAPIView(generics.ListAPIView):
+#     queryset = Order.objects.prefetch_related("items", "items__product")
+#     serializer_class = OrderSerializer
+#     permission_classes = [IsAuthenticated]
     
-    def get_queryset(self):
-        qs = super().get_queryset()
+#     def get_queryset(self):
+#         qs = super().get_queryset()
         
-        return qs.filter(user=self.request.user)
+#         return qs.filter(user=self.request.user)
     
         
         
@@ -119,4 +186,10 @@ class ProductInfoAPIView(APIView):
         
         return Response(serializer.data)
 
+
+
+class UserListAPIView(generics.ListAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    pagination_class = None
     

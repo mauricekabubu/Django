@@ -1,0 +1,428 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>{{ book.title }} — BookShelf</title>
+<meta name="description" content="{{ book.title }} by {{ book.author }} — continue reading on BookShelf." />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+
+<link rel="stylesheet" href="{% static 'style.css' %}"/>
+<link rel="stylesheet" href="{% static 'dashboard.css' %}"/>
+</head>
+<body>
+
+<a class="skip-link" href="#main">Skip to content</a>
+
+<!-- ============================= -->
+<!-- NAVIGATION                    -->
+<!-- ============================= -->
+<header class="navbar" id="navbar">
+  <div class="navbar__inner container">
+
+    <a href="{% url 'index' %}" class="brand" aria-label="BookShelf home">
+      <span class="brand__mark" aria-hidden="true">
+        <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
+          <rect x="2" y="3" width="4" height="20" rx="1.5" fill="currentColor"/>
+          <rect x="8" y="1" width="4" height="22" rx="1.5" fill="currentColor" opacity="0.75"/>
+          <rect x="14" y="4" width="4" height="19" rx="1.5" fill="currentColor" opacity="0.5"/>
+          <rect x="20" y="2" width="4" height="21" rx="1.5" fill="currentColor" opacity="0.25"/>
+        </svg>
+      </span>
+      <span class="brand__name">BookShelf</span>
+    </a>
+
+    <nav class="nav-links" id="navLinks" aria-label="Primary">
+      <a href="{% url 'dashboard' %}" class="nav-link">Home</a>
+      <a href="{% url 'library' %}" class="nav-link is-active">My Library</a>
+      <a href="#" class="nav-link">Discover</a>
+      <a href="#" class="nav-link">Categories</a>
+    </nav>
+
+    <div class="navbar__actions">
+      <div class="dash-search">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" placeholder="Search books..." aria-label="Search books" />
+      </div>
+
+      <button class="icon-btn dash-notif" aria-label="Notifications" aria-haspopup="true">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        <span class="dash-notif__dot" aria-hidden="true"></span>
+      </button>
+
+      <button class="icon-btn" id="themeToggle" aria-label="Toggle dark mode">
+        <svg id="iconSun" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+        <svg id="iconMoon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="display:none"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z"/></svg>
+      </button>
+
+      <div class="dash-avatar">
+        <button class="dash-avatar__btn" id="avatarToggle" aria-haspopup="true" aria-expanded="false" aria-controls="avatarMenu">
+          <img src="{{ user.avatar.url|default:'https://i.pravatar.cc/64?img=12' }}" alt="{{ user.first_name|default:'Reader' }}'s avatar" />
+        </button>
+        <div class="dash-avatar__menu" id="avatarMenu">
+          <a href="{% url 'library' %}">My Library</a>
+          <a href="#">Profile Settings</a>
+          <a href="#">Sign Out</a>
+        </div>
+      </div>
+
+      <button class="hamburger" id="hamburger" aria-label="Open menu" aria-expanded="false" aria-controls="mobileMenu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+
+  <div class="mobile-menu" id="mobileMenu">
+    <a href="{% url 'index' %}" class="mobile-link">Home</a>
+    <a href="#" class="mobile-link">My Library</a>
+    <a href="#" class="mobile-link">Discover</a>
+    <a href="#" class="mobile-link">Categories</a>
+  </div>
+</header>
+
+<main id="main" class="dash-main">
+  <div class="container">
+
+    <!-- ============================= -->
+    <!-- BOOK HERO                     -->
+    <!-- ============================= -->
+    <section class="book-hero reveal">
+      <div class="book-hero__cover-wrap">
+        <img class="book-hero__cover" src="{{ book.cover.url }}" alt="Cover of {{ book.title }}" />
+        {% if progress.status == 'reading' %}
+          <span class="dash-badge dash-badge--reading">Currently Reading</span>
+        {% elif progress.status == 'saved' %}
+          <span class="dash-badge dash-badge--saved">Saved</span>
+        {% elif progress.status == 'finished' %}
+          <span class="dash-badge dash-badge--finished">Finished</span>
+        {% endif %}
+      </div>
+
+      <div class="book-hero__info">
+        <div class="book-hero__badges">
+          <span class="dash-tag">{{ book.category }}</span>
+        </div>
+
+        <h1 class="book-hero__title">{{ book.title }}</h1>
+        <a href="#" class="book-hero__author">by {{ book.author }}</a>
+
+        <div class="book-hero__rating">
+          <span class="stars" aria-label="{{ book.rating }} out of 5 stars">★★★★☆</span>
+          <span class="book-hero__rating-value">{{ book.rating }}</span>
+          <span class="book-hero__rating-count">({{ book.review_count }} reviews)</span>
+        </div>
+
+        <p class="book-hero__desc">{{ book.description|truncatewords:35 }}</p>
+
+        <div class="book-hero__meta">
+          <span>{{ book.published_date }}</span>
+          <span class="dash-dot" aria-hidden="true">•</span>
+          <span>{{ book.pages }} pages</span>
+          <span class="dash-dot" aria-hidden="true">•</span>
+          {% if reading_time_estimate %}<span>{{ reading_time_estimate }} read</span><span class="dash-dot" aria-hidden="true">•</span>{% endif %}
+          <span>{{ book.language }}</span>
+        </div>
+
+        <div class="book-hero__actions">
+          <a href="#" class="btn btn--primary btn--lg">Start Reading</a>
+          <button type="button" class="btn btn--outline btn--lg">Add to Library</button>
+          <button type="button" class="icon-btn dash-icon-action" aria-label="Bookmark this book" aria-pressed="{{ has_bookmarks|yesno:'true,false' }}">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+          </button>
+          <button type="button" class="icon-btn dash-icon-action" aria-label="Share this book">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.6" y1="13.5" x2="15.4" y2="17.5"/><line x1="15.4" y1="6.5" x2="8.6" y2="10.5"/></svg>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================= -->
+    <!-- READING PROGRESS               -->
+    <!-- ============================= -->
+    <section class="progress-card reveal">
+      <div class="progress-card__ring">
+        <svg viewBox="0 0 120 120" class="progress-ring" role="img" aria-label="{{ progress.progress_percent }}% completed">
+          <circle class="progress-ring__track" cx="60" cy="60" r="52" />
+          <circle class="progress-ring__value" cx="60" cy="60" r="52"
+            style="--progress: {{ progress.progress_percent }};" />
+        </svg>
+        <div class="progress-ring__label">
+          <span class="progress-ring__pct">{{ progress.progress_percent }}%</span>
+          <span class="progress-ring__sub">completed</span>
+        </div>
+      </div>
+
+      <div class="progress-card__body">
+        <h2 class="progress-card__title">Your Progress</h2>
+        <p class="progress-card__pages">Page {{ progress.current_page }} of {{ book.pages }}</p>
+
+        <div class="progress-bar" role="progressbar" aria-valuenow="{{ progress.progress_percent }}" aria-valuemin="0" aria-valuemax="100">
+          <div class="progress-bar__fill" style="--progress-width: {{ progress.progress_percent }}%; width: var(--progress-width);"></div>
+        </div>
+
+        <div class="progress-card__meta">
+          {% if time_remaining %}<span>{{ time_remaining }} remaining</span><span class="dash-dot" aria-hidden="true">•</span>{% endif %}
+          <span>{% if progress.last_read_at %}Last read {{ progress.last_read_at }}{% else %}Not started yet{% endif %}</span>
+        </div>
+      </div>
+
+      <a href="#" class="btn btn--primary progress-card__cta">Continue Reading</a>
+    </section>
+
+    <!-- ============================= -->
+    <!-- BODY: MAIN + SIDEBAR          -->
+    <!-- ============================= -->
+    <div class="dash-layout">
+
+      <div class="dash-content">
+
+        <!-- BOOK DETAILS -->
+        <section class="dash-panel reveal">
+          <h2 class="dash-panel__title">Book Details</h2>
+          <dl class="details-grid">
+            <div class="details-grid__item">
+              <dt>Author</dt>
+              <dd>{{ book.author }}</dd>
+            </div>
+            <div class="details-grid__item">
+              <dt>Published</dt>
+              <dd>{{ book.published_date }}</dd>
+            </div>
+            <div class="details-grid__item">
+              <dt>Publisher</dt>
+              <dd>{{ book.publisher|default:"—" }}</dd>
+            </div>
+            <div class="details-grid__item">
+              <dt>Pages</dt>
+              <dd>{{ book.pages }}</dd>
+            </div>
+            <div class="details-grid__item">
+              <dt>Language</dt>
+              <dd>{{ book.language }}</dd>
+            </div>
+            <div class="details-grid__item">
+              <dt>ISBN</dt>
+              <dd>{{ book.isbn|default:"—" }}</dd>
+            </div>
+            <div class="details-grid__item">
+              <dt>Format</dt>
+              <dd>{{ book.format }}</dd>
+            </div>
+            <div class="details-grid__item">
+              <dt>Genre</dt>
+              <dd>{{ book.category }}</dd>
+            </div>
+            <div class="details-grid__item">
+              <dt>Rating</dt>
+              <dd>{{ book.rating }} / 5</dd>
+            </div>
+          </dl>
+        </section>
+
+        <!-- ABOUT THE BOOK -->
+        <section class="dash-panel reveal">
+          <h2 class="dash-panel__title">About This Book</h2>
+          <div class="about-block">
+            <p>{{ book.description|truncatewords:60 }}</p>
+            <details class="about-block__more">
+              <summary>Read more</summary>
+              <p>{{ book.description }}</p>
+            </details>
+          </div>
+        </section>
+
+        <!-- AUTHOR -->
+        <section class="dash-panel reveal">
+          <h2 class="dash-panel__title">About the Author</h2>
+          <div class="author-panel">
+            {% if book.author.image %}
+              <img class="author-panel__avatar" src="{{ book.author.image.url }}" alt="Portrait of {{ book.author }}" />
+            {% else %}
+              <img class="author-panel__avatar" src="https://i.pravatar.cc/128?u={{ book.author.id }}" alt="Portrait of {{ book.author }}" />
+            {% endif %}
+            <div class="author-panel__body">
+              <h3 class="author-panel__name">{{ book.author }}</h3>
+              <p class="author-panel__bio">{{ book.author.bio }}</p>
+              <div class="author-panel__meta">
+                <span>{{ book.author.book_count }} books</span>
+                <span class="dash-dot" aria-hidden="true">•</span>
+                <span class="stars" aria-label="{{ book.author.rating }} out of 5 stars">★★★★☆</span>
+                <span>{{ book.author.rating }}</span>
+              </div>
+              <a href="#" class="btn btn--outline btn--sm">View Author Profile</a>
+            </div>
+          </div>
+        </section>
+
+        <!-- TABLE OF CONTENTS -->
+        {% if chapters %}
+        <section class="dash-panel reveal">
+          <h2 class="dash-panel__title">Table of Contents</h2>
+          <ol class="toc-list">
+            {% for chapter in chapters %}
+            <li class="toc-item {% if chapter.is_locked %}toc-item--locked{% endif %} {% if chapter.is_current %}toc-item--current{% endif %}">
+              <a href="{% if not chapter.is_locked %}{% url 'read_chapter' book.id chapter.number %}{% else %}#{% endif %}" class="toc-item__link">
+                <span class="toc-item__number">{{ chapter.number|stringformat:"02d" }}</span>
+                <span class="toc-item__title">{{ chapter.title }}</span>
+                <span class="toc-item__page">Page {{ chapter.start_page }}</span>
+                <span class="toc-item__status">
+                  {% if chapter.is_locked %}
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-label="Locked"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                  {% elif chapter.is_complete %}
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-label="Completed"><polyline points="20 6 9 17 4 12"/></svg>
+                  {% elif chapter.is_current %}
+                    <span class="toc-item__percent">Current</span>
+                  {% endif %}
+                </span>
+              </a>
+            </li>
+            {% endfor %}
+          </ol>
+        </section>
+        {% endif %}
+
+        <!-- READER ACTIONS -->
+        <section class="dash-panel reveal">
+          <h2 class="dash-panel__title">Reader Actions</h2>
+          <div class="reader-actions">
+            <a href="#" class="btn btn--primary">Continue Reading</a>
+            <button type="button" class="btn btn--outline">Bookmark</button>
+            <button type="button" class="btn btn--outline">Add to Reading List</button>
+            <button type="button" class="btn btn--outline">Mark as Finished</button>
+            <button type="button" class="btn btn--ghost">Download</button>
+            <button type="button" class="btn btn--ghost">Share</button>
+          </div>
+          {% if book.format %}
+          <p class="reader-actions__formats">
+            Available format:
+            <span class="dash-tag dash-tag--muted">{{ book.format }}</span>
+          </p>
+          {% endif %}
+        </section>
+
+      </div>
+
+      <!-- ============================= -->
+      <!-- SIDEBAR                        -->
+      <!-- ============================= -->
+      <aside class="dash-sidebar reveal">
+
+        <div class="sidebar-card">
+          <h3 class="sidebar-card__title">Reading Progress</h3>
+          <div class="progress-bar progress-bar--sm" role="progressbar" aria-valuenow="{{ progress.progress_percent }}" aria-valuemin="0" aria-valuemax="100">
+            <div class="progress-bar__fill" style="--progress-percent: {{ progress.progress_percent }}%; width: var(--progress-percent, 0%);"></div>
+          </div>
+          <p class="sidebar-card__note">{{ progress.progress_percent }}% · Page {{ progress.current_page }} of {{ book.pages }}</p>
+        </div>
+
+        <div class="sidebar-card">
+          <h3 class="sidebar-card__title">Current Chapter</h3>
+          <p class="sidebar-card__note">{{ current_chapter.title|default:"Not started yet" }}</p>
+        </div>
+
+        <div class="sidebar-card">
+          <h3 class="sidebar-card__title">Bookmarks</h3>
+          {% if bookmarks %}
+            <ul class="sidebar-list">
+              {% for bookmark in bookmarks %}
+                <li>
+                  <a href="{% if bookmark.chapter %}{% url 'read_chapter' book.id bookmark.chapter.number %}{% else %}#{% endif %}">
+                    Page {{ bookmark.page }}{% if bookmark.label %} — {{ bookmark.label }}{% endif %}
+                  </a>
+                </li>
+              {% endfor %}
+            </ul>
+          {% else %}
+            <p class="sidebar-card__empty">No bookmarks yet.</p>
+          {% endif %}
+        </div>
+
+        <div class="sidebar-card">
+          <h3 class="sidebar-card__title">Notes</h3>
+          {% if notes %}
+            <ul class="sidebar-list">
+              {% for note in notes %}
+                <li>{{ note.text|truncatewords:12 }}</li>
+              {% endfor %}
+            </ul>
+          {% else %}
+            <p class="sidebar-card__empty">No notes yet.</p>
+          {% endif %}
+        </div>
+
+        <div class="sidebar-card">
+          <h3 class="sidebar-card__title">Reading Activity</h3>
+          {% if reading_activity %}
+            <ul class="sidebar-list sidebar-list--activity">
+              {% for entry in reading_activity %}
+                <li><span>{{ entry.date }}</span><span>{{ entry.pages_read }} pages</span></li>
+              {% endfor %}
+            </ul>
+          {% else %}
+            <p class="sidebar-card__empty">No recent activity.</p>
+          {% endif %}
+        </div>
+
+        <div class="sidebar-card">
+          <h3 class="sidebar-card__title">Recently Read</h3>
+          {% if recent_books %}
+            <ul class="sidebar-list sidebar-list--books">
+              {% for recent in recent_books %}
+                <li>
+                  <a href="{% url 'book_detail' recent.id %}">
+                    <img src="{{ recent.cover.url }}" alt="Cover of {{ recent.title }}" />
+                    <span>{{ recent.title }}</span>
+                  </a>
+                </li>
+              {% endfor %}
+            </ul>
+          {% else %}
+            <p class="sidebar-card__empty">Nothing here yet.</p>
+          {% endif %}
+        </div>
+
+      </aside>
+    </div>
+
+    <!-- ============================= -->
+    <!-- RELATED BOOKS                  -->
+    <!-- ============================= -->
+    {% if related_books %}
+    <section class="section related-books reveal">
+      <div class="section__head">
+        <p class="eyebrow">Keep exploring</p>
+        <h2 class="section__title">You May Also Like</h2>
+      </div>
+
+      <div class="book-grid">
+        {% for related in related_books %}
+        <article class="book-card">
+          <div class="book-card__cover-wrap">
+            <img class="book-card__cover" src="{{ related.cover.url }}" alt="{{ related.title }}" loading="lazy" />
+            <span class="badge badge--category">{{ related.category }}</span>
+          </div>
+          <div class="book-card__body">
+            <h3 class="book-card__title">{{ related.title }}</h3>
+            <p class="book-card__author">{{ related.author }}</p>
+            <div class="book-card__meta">
+              <span class="stars" aria-label="{{ related.rating }} out of 5 stars">★★★★☆</span>
+              <span class="book-card__year">{{ related.published_date }}</span>
+            </div>
+            <a href="{% url 'book_detail' related.id %}" class="btn btn--outline btn--sm book-card__cta">View Book</a>
+          </div>
+        </article>
+        {% endfor %}
+      </div>
+    </section>
+    {% endif %}
+
+  </div>
+</main>
+
+<script src="{% static 'main.js' %}?v={% now 'U' %}"></script></body>
+</html>

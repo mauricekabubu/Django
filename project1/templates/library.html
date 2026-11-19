@@ -1,0 +1,383 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>My Library — BookShelf</title>
+<meta name="description" content="Track the books you're reading, want to read, and have finished on BookShelf." />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+
+<link rel="stylesheet" href="{% static 'style.css' %}" />
+<link rel="stylesheet" href="{% static 'dashboard.css' %}" />
+<link rel="stylesheet" href="{% static 'library.css' %}" />
+</head>
+<body>
+
+<a class="skip-link" href="#main">Skip to content</a>
+
+<!-- ============================= -->
+<!-- NAVIGATION (shared w/ dashboard) -->
+<!-- ============================= -->
+<header class="navbar" id="navbar">
+  <div class="navbar__inner container">
+
+    <a href="{% url 'index' %}" class="brand" aria-label="BookShelf home">
+      <span class="brand__mark" aria-hidden="true">
+        <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
+          <rect x="2" y="3" width="4" height="20" rx="1.5" fill="currentColor"/>
+          <rect x="8" y="1" width="4" height="22" rx="1.5" fill="currentColor" opacity="0.75"/>
+          <rect x="14" y="4" width="4" height="19" rx="1.5" fill="currentColor" opacity="0.5"/>
+          <rect x="20" y="2" width="4" height="21" rx="1.5" fill="currentColor" opacity="0.25"/>
+        </svg>
+      </span>
+      <span class="brand__name">BookShelf</span>
+    </a>
+
+    <nav class="nav-links" id="navLinks" aria-label="Primary">
+      <a href="{% url 'dashboard' %}" class="nav-link">Home</a>
+      <a href="{% url 'library' %}" class="nav-link is-active">My Library</a>
+      <a href="#" class="nav-link">Discover</a>
+      <a href="#" class="nav-link">Categories</a>
+       <a href="{% url 'logout' %}" class="nav-link">Logout</a>
+    </nav>
+
+    <div class="navbar__actions">
+      <div class="dash-search">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" placeholder="Search books..." aria-label="Search books" />
+      </div>
+
+      <button class="icon-btn dash-notif" aria-label="Notifications" aria-haspopup="true">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        <span class="dash-notif__dot" aria-hidden="true"></span>
+      </button>
+
+      <button class="icon-btn" id="themeToggle" aria-label="Toggle dark mode">
+        <svg id="iconSun" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+        <svg id="iconMoon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="display:none"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z"/></svg>
+      </button>
+
+      <div class="dash-avatar">
+        <button class="dash-avatar__btn" id="avatarToggle" aria-haspopup="true" aria-expanded="false" aria-controls="avatarMenu">
+          <img src="{{ user.avatar.url|default:'https://i.pravatar.cc/64?img=12' }}" alt="{{ user.first_name|default:'Reader' }}'s avatar" />
+        </button>
+        <div class="dash-avatar__menu" id="avatarMenu">
+          <a href="{% url 'library' %}">My Library</a>
+          <a href="#">Profile Settings</a>
+          <a href="{% url 'logout' %}">Sign Out</a>
+        </div>
+      </div>
+
+      <button class="hamburger" id="hamburger" aria-label="Open menu" aria-expanded="false" aria-controls="mobileMenu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+
+  <div class="mobile-menu" id="mobileMenu">
+    <a href="{% url 'index' %}" class="mobile-link">Home</a>
+    <a href="{% url 'library' %}" class="mobile-link">My Library</a>
+    <a href="#" class="mobile-link">Discover</a>
+    <a href="#" class="mobile-link">Categories</a>
+  </div>
+</header>
+
+<main id="main" class="dash-main">
+  <div class="container">
+
+    <!-- ============================= -->
+    <!-- LIBRARY HEADER                 -->
+    <!-- ============================= -->
+    <section class="library-header reveal">
+      <div>
+        <p class="eyebrow">Your collection</p>
+        <h1 class="library-header__title">My Library</h1>
+        <p class="library-header__subtitle">Keep track of the books you're reading, want to read, and have finished.</p>
+      </div>
+      <a href="#" class="btn btn--primary btn--lg library-header__cta">+ Add Book</a>
+    </section>
+
+    <!-- ============================= -->
+    <!-- READING OVERVIEW                -->
+    <!-- ============================= -->
+    <section class="overview-grid reveal" aria-label="Reading overview">
+      <div class="overview-card">
+        <span class="overview-card__icon" aria-hidden="true">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+        </span>
+        <span class="overview-card__number">{{ library_stats.currently_reading_count }}</span>
+        <span class="overview-card__label">Currently Reading</span>
+      </div>
+
+      <div class="overview-card">
+        <span class="overview-card__icon" aria-hidden="true">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+        </span>
+        <span class="overview-card__number">{{ library_stats.want_to_read_count }}</span>
+        <span class="overview-card__label">Want to Read</span>
+      </div>
+
+      <div class="overview-card">
+        <span class="overview-card__icon" aria-hidden="true">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        </span>
+        <span class="overview-card__number">{{ library_stats.finished_count }}</span>
+        <span class="overview-card__label">Finished</span>
+      </div>
+
+      <div class="overview-card">
+        <span class="overview-card__icon" aria-hidden="true">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M18.7 8 12 14.7 8.5 11.2 3 16.7"/></svg>
+        </span>
+        <span class="overview-card__number">{{ library_stats.overall_progress_percent }}%</span>
+        <span class="overview-card__label">Reading Progress</span>
+      </div>
+    </section>
+
+    <div class="library-layout">
+      <div class="library-content">
+
+        {% if library_books %}
+
+          <!-- ============================= -->
+          <!-- CONTINUE READING                -->
+          <!-- ============================= -->
+          {% if continuing_books %}
+          <section class="continue-section reveal">
+            <h2 class="library-section__title">Continue Reading</h2>
+
+            <div class="continue-grid">
+              {% for entry in continuing_books %}
+              <article class="continue-card">
+                <img class="continue-card__cover" src="{{ entry.book.cover.url }}" alt="Cover of {{ entry.book.title }}" />
+
+                <div class="continue-card__body">
+                  <h3 class="continue-card__title">{{ entry.book.title }}</h3>
+                  <p class="continue-card__author">{{ entry.book.author }}</p>
+                  <p class="continue-card__desc">{{ entry.book.description|truncatewords:18 }}</p>
+
+                  <div class="continue-card__progress-row">
+                    <span class="continue-card__percent">{{ entry.progress_percent }}% complete</span>
+                    <span class="dash-dot" aria-hidden="true">•</span>
+                    <span>{{ entry.current_chapter.title|default:"Not started yet" }}</span>
+                  </div>
+
+                  <div class="progress-bar progress-bar--sm" role="progressbar" aria-valuenow="{{ entry.progress_percent }}" aria-valuemin="0" aria-valuemax="100">
+                    <div class="progress-bar__fill" data-progress="{{ entry.progress_percent }}"></div>
+                  </div>
+
+                  <div class="continue-card__meta">
+                    <span>Page {{ entry.current_page }} of {{ entry.book.pages }}</span>
+                    {% if entry.time_remaining_estimate %}<span class="dash-dot" aria-hidden="true">•</span><span>{{ entry.time_remaining_estimate }} remaining</span>{% endif %}
+                  </div>
+                </div>
+
+                <a href="{% url 'book_detail' entry.book.id %}" class="btn btn--primary continue-card__cta">Continue Reading</a>
+              </article>
+              {% endfor %}
+            </div>
+          </section>
+          {% endif %}
+
+          <!-- ============================= -->
+          <!-- LIBRARY CONTROLS                -->
+          <!-- ============================= -->
+          <section class="library-toolbar reveal" aria-label="Library filters and sorting">
+            <div class="library-toolbar__search">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input type="text" placeholder="Search your library..." aria-label="Search your library" />
+            </div>
+
+            <div class="library-toolbar__filters">
+              <label class="sr-only" for="filterSelect">Filter</label>
+              <select id="filterSelect" class="library-select">
+                <option>All Books</option>
+              </select>
+
+              <div class="status-pills" role="group" aria-label="Filter by status">
+                <button type="button" class="status-pill is-active">All</button>
+                <button type="button" class="status-pill">Currently Reading</button>
+                <button type="button" class="status-pill">Want to Read</button>
+                <button type="button" class="status-pill">Finished</button>
+              </div>
+
+              <label class="sr-only" for="sortSelect">Sort by</label>
+              <select id="sortSelect" class="library-select">
+                <option>Recently Added</option>
+                <option>Recently Read</option>
+                <option>Title</option>
+                <option>Author</option>
+                <option>Progress</option>
+              </select>
+
+              <div class="view-toggle" role="group" aria-label="Change view">
+                <button type="button" class="view-toggle__btn is-active" aria-label="Grid view" aria-pressed="true">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+                </button>
+                <button type="button" class="view-toggle__btn" aria-label="List view" aria-pressed="false">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+                </button>
+              </div>
+            </div>
+          </section>
+
+          <!-- ============================= -->
+          <!-- MAIN BOOK COLLECTION            -->
+          <!-- ============================= -->
+          <section class="library-grid reveal" aria-label="Your books">
+            {% for entry in library_books %}
+            <article class="book-card book-card--library">
+              <div class="book-card__cover-wrap">
+                <img class="book-card__cover" src="{{ entry.book.cover.url }}" alt="Cover of {{ entry.book.title }}" loading="lazy" />
+                <span class="dash-badge {% if entry.status == 'reading' %}dash-badge--reading{% elif entry.status == 'finished' %}dash-badge--finished{% else %}dash-badge--saved{% endif %}">
+                  {% if entry.status == 'reading' %}Reading{% elif entry.status == 'finished' %}Finished{% else %}Want to Read{% endif %}
+                </span>
+
+                <div class="book-card__menu">
+                  <button type="button" class="book-card__menu-btn" aria-label="More options for {{ entry.book.title }}" aria-haspopup="true">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="12" cy="19" r="1.6"/></svg>
+                  </button>
+                  <div class="book-card__menu-list">
+                    <a href="{% url 'book_detail' entry.book.id %}">View Details</a>
+                    <button type="button">Add Bookmark</button>
+                    <button type="button">Mark as Finished</button>
+                    <button type="button" class="book-card__menu-danger">Remove from Library</button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="book-card__body">
+                <h3 class="book-card__title">{{ entry.book.title }}</h3>
+                <p class="book-card__author">{{ entry.book.author }}</p>
+                <span class="dash-tag dash-tag--muted">{{ entry.book.category }}</span>
+
+                <div class="book-card__meta">
+                  <span class="stars" aria-label="{{ entry.book.rating }} out of 5 stars">★★★★☆</span>
+                  <span class="book-card__year">{{ entry.book.published_date|date:"Y" }}</span>
+                </div>
+
+                {% if entry.status != 'saved' %}
+                {% with progress_pct=entry.progress_percent|default:0 %}
+                <div class="progress-bar progress-bar--sm" role="progressbar" aria-valuenow="{{ progress_pct|default:0 }}" aria-valuemin="0" aria-valuemax="100">
+                  <div class="progress-bar__fill" data-progress="{{ progress_pct|default:0 }}" style="width: 0%;"></div>
+                </div>
+                {% endwith %}
+                <p class="book-card__pages">{{ entry.current_page }} / {{ entry.book.pages }} pages</p>
+                <p class="book-card__lastread">{% if entry.last_read_at %}Last read {{ entry.last_read_at }}{% else %}Not started yet{% endif %}</p>
+                {% endif %}
+
+                {% if entry.status == 'reading' %}
+                  <a href="{% url 'book_detail' entry.book.id %}" class="btn btn--primary btn--sm book-card__cta">Continue Reading</a>
+                {% elif entry.status == 'finished' %}
+                  <a href="{% url 'book_detail' entry.book.id %}" class="btn btn--outline btn--sm book-card__cta">Read Again</a>
+                {% else %}
+                  <a href="{% url 'book_detail' entry.book.id %}" class="btn btn--outline btn--sm book-card__cta">Start Reading</a>
+                {% endif %}
+              </div>
+            </article>
+            {% endfor %}
+          </section>
+
+        {% else %}
+
+          <!-- ============================= -->
+          <!-- EMPTY STATE                    -->
+          <!-- ============================= -->
+          <section class="empty-state reveal">
+            <span class="empty-state__icon" aria-hidden="true">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M2 4h6a4 4 0 0 1 4 4v12a3 3 0 0 0-3-3H2z"/>
+                <path d="M22 4h-6a4 4 0 0 0-4 4v12a3 3 0 0 1 3-3h7z"/>
+              </svg>
+            </span>
+            <h2 class="empty-state__title">Your library is waiting.</h2>
+            <p class="empty-state__text">Start exploring BookShelf and add your first book to begin building your personal collection.</p>
+            <a href="#" class="btn btn--primary btn--lg">Discover Books</a>
+          </section>
+
+        {% endif %}
+      </div>
+
+      <!-- ============================= -->
+      <!-- SIDEBAR                        -->
+      <!-- ============================= -->
+      <aside class="dash-sidebar reveal">
+
+        <div class="sidebar-card">
+          <h3 class="sidebar-card__title">Reading Goal</h3>
+          <div class="reading-goal">
+            <div class="progress-card__ring reading-goal__ring">
+              <svg viewBox="0 0 120 120" class="progress-ring" role="img" aria-label="{{ reading_goal.percent }}% of reading goal complete">
+                <circle class="progress-ring__track" cx="60" cy="60" r="52" />
+                <circle class="progress-ring__value" cx="60" cy="60" r="52" data-progress="{{ reading_goal.percent }}" />
+              </svg>
+              <div class="progress-ring__label">
+                <span class="progress-ring__pct">{{ reading_goal.percent }}%</span>
+              </div>
+            </div>
+            <p class="sidebar-card__note">{{ reading_goal.books_read }} of {{ reading_goal.goal_count }} books this year</p>
+          </div>
+        </div>
+
+        <div class="sidebar-card">
+          <h3 class="sidebar-card__title">Recently Added</h3>
+          {% if recently_added %}
+            <ul class="sidebar-list sidebar-list--books">
+              {% for entry in recently_added %}
+                <li>
+                  <a href="{% url 'book_detail' entry.book.id %}">
+                    <img src="{{ entry.book.cover.url }}" alt="Cover of {{ entry.book.title }}" />
+                    <span>{{ entry.book.title }}</span>
+                  </a>
+                </li>
+              {% endfor %}
+            </ul>
+          {% else %}
+            <p class="sidebar-card__empty">Nothing added recently.</p>
+          {% endif %}
+        </div>
+
+        <div class="sidebar-card">
+          <h3 class="sidebar-card__title">Recently Finished</h3>
+          {% if recently_finished %}
+            <ul class="sidebar-list sidebar-list--books">
+              {% for entry in recently_finished %}
+                <li>
+                  <a href="{% url 'book_detail' entry.book.id %}">
+                    <img src="{{ entry.book.cover.url }}" alt="Cover of {{ entry.book.title }}" />
+                    <span>{{ entry.book.title }}</span>
+                  </a>
+                </li>
+              {% endfor %}
+            </ul>
+          {% else %}
+            <p class="sidebar-card__empty">No finished books yet.</p>
+          {% endif %}
+        </div>
+
+        <div class="sidebar-card">
+          <h3 class="sidebar-card__title">Favorite Categories</h3>
+          {% if favorite_categories %}
+            <div class="sidebar-tags">
+              {% for category in favorite_categories %}
+                <span class="dash-tag">{{ category }}</span>
+              {% endfor %}
+            </div>
+          {% else %}
+            <p class="sidebar-card__empty">Read a few books to see your favorites.</p>
+          {% endif %}
+        </div>
+
+      </aside>
+    </div>
+
+  </div>
+</main>
+<script src="{% static 'main.js' %}?v=3"></script>
+</body>
+</html>
